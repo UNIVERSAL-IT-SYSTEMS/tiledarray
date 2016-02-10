@@ -65,6 +65,7 @@ namespace TiledArray {
       Permutation perm_; ///< The permutation that will be applied to the result
       trange_type trange_; ///< The tiled range of the result tensor
       shape_type shape_; ///< The shape of the result tensor
+      std::shared_ptr<shape_type> forced_shape_ptr_;
       std::shared_ptr<pmap_interface> pmap_; ///< The process map for the result tensor
 
     public:
@@ -72,10 +73,21 @@ namespace TiledArray {
       /// Default constructor
 
       /// All data members are initialized to NULL values.
-      ExprEngine() :
+      template <typename D>
+      ExprEngine(const Expr<D> &expr) :
         world_(NULL), vars_(), permute_tiles_(true), perm_(), trange_(), shape_(),
         pmap_()
-      { }
+      {
+          auto forcer_ptr = expr.forced_outputs();
+          if(forcer_ptr != nullptr){
+              if(forcer_ptr->shape_ptr != nullptr){
+                  forced_shape_ptr_ = forcer_ptr->shape_ptr;
+              }
+              if(forced_shape_ptr_ != nullptr){
+                  std::cout << "\tset forced_shape_ptr_" << std::endl;
+              }
+          }
+      }
 
       /// Construct and initialize the expression engine
 
@@ -127,6 +139,16 @@ namespace TiledArray {
         } else {
           trange_ = derived().make_trange();
           shape_ = derived().make_shape();
+        }
+
+        if(forced_shape_ptr_ != nullptr){
+            // Need to take union of forced shape with computed shape, 
+            // but do simple  thing for now
+            std::cout << "Ptr was set" << std::endl;
+            shape_ = *forced_shape_ptr_;
+        } else {
+            // assert(false);
+            std::cout << "Ptr was not set" << std::endl;
         }
       }
 

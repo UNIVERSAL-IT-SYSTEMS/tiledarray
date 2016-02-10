@@ -56,6 +56,34 @@ namespace TiledArray {
       typedef typename ExprTrait<Derived>::engine_type
           engine_type; ///< Expression engine type
 
+      struct OutputForcer {
+          std::shared_ptr<typename engine_type::shape_type> shape_ptr;
+      };
+
+
+    private:
+
+      std::shared_ptr<OutputForcer> forcer_ptr_;
+
+    public:
+      // move later
+      std::shared_ptr<const OutputForcer> forced_outputs() const {
+        return forcer_ptr_;
+      }
+
+      Expr<Derived> &set_shape(typename engine_type::shape_type const &shape) {
+          if(forcer_ptr_ != nullptr){
+            forcer_ptr_->shape_ptr = 
+                std::make_shared<typename engine_type::shape_type>(shape);
+          } else {
+              OutputForcer forcer;
+              forcer.shape_ptr = 
+                  std::make_shared<typename engine_type::shape_type>(shape);
+              forcer_ptr_ = std::make_shared<OutputForcer>(std::move(forcer));
+          }
+          return derived();
+      }
+
     private:
 
       Expr<Derived>& operator=(const Expr<Derived>&) = delete;

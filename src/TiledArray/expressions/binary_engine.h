@@ -81,8 +81,12 @@ namespace TiledArray {
 
       template <typename D>
       BinaryEngine(const BinaryExpr<D>& expr) :
-        ExprEngine_(), left_(expr.left()), right_(expr.right())
-      { }
+        ExprEngine_(expr), left_(expr.left()), right_(expr.right())
+      {
+          if(ExprEngine_::forced_shape_ptr_ == nullptr){
+              assert(false);
+          }
+      }
 
       /// Set the variable list for this expression
 
@@ -166,6 +170,7 @@ namespace TiledArray {
               "of the binary operation are not equal.");
         }
 #endif // NDEBUG
+        std::cout << "Calling init struct on base from derived" << std::endl;
         ExprEngine_::init_struct(target_vars);
       }
 
